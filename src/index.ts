@@ -1,4 +1,5 @@
 import { logger, type IAgentRuntime, type Project, type ProjectAgent } from '@elizaos/core';
+import dreamPlugin from './plugins/dream/index.ts';
 import { character } from './character.ts';
 
 const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
@@ -9,7 +10,7 @@ const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
 export const projectAgent: ProjectAgent = {
   character,
   init: async (runtime: IAgentRuntime) => await initCharacter({ runtime }),
-  plugins: [],
+  plugins: [dreamPlugin],
 };
 
 const project: Project = {
