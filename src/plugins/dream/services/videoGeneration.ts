@@ -17,7 +17,7 @@ export async function generateDreamVideo(dreamText: string): Promise<string> {
   logger.info(`[DreamPlugin] Prompt: ${dreamText.substring(0, 100)}...`);
 
   try {
-    const result = await fal.subscribe('fal-ai/kling-video/v2/master/text-to-video', {
+    const result = await fal.subscribe('fal-ai/kling-video/v3/pro/text-to-video', {
       input: {
         prompt: `Cinematic, dreamlike, surreal: ${dreamText}`,
         duration: 10,

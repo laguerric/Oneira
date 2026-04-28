@@ -21,7 +21,7 @@ async function main() {
   console.log(`Prompt: ${dreamPrompt.substring(0, 80)}...`);
   console.log('Duration: 15s, Aspect ratio: 16:9\n');
 
-  const result = await fal.subscribe('fal-ai/kling-video/v2/master/text-to-video', {
+  const result = await fal.subscribe('fal-ai/kling-video/v3/pro/text-to-video', {
     input: {
       prompt: dreamPrompt,
       duration: 10,

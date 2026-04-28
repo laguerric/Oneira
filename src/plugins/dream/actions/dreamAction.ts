@@ -62,13 +62,9 @@ export const dreamAction: Action = {
         }
       }
 
-      // Step 4: Post the dream
-      const dreamPost = videoUrl
-        ? dreamText
-        : dreamText;
-
+      // Step 4: Post the dream (video only, no caption)
       await callback({
-        text: dreamPost,
+        text: videoUrl ? '' : dreamText,
         ...(videoUrl ? { attachments: [{ id: 'dream-video', url: videoUrl, title: 'Tonight\'s dream' }] } : {}),
       });
 

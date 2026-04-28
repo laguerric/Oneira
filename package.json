@@ -40,6 +40,7 @@
     "@tanstack/react-query": "^5.67.2",
     "clsx": "^2.1.1",
     "node-cron": "^4.2.1",
+    "oauth-1.0a": "^2.2.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.3.1",

@@ -3,6 +3,7 @@ import { dailyContextProvider } from './providers/dailyContext.ts';
 import { dreamAction } from './actions/dreamAction.ts';
 import { synthesizeDream } from './services/dreamSynthesis.ts';
 import { generateDreamVideo } from './services/videoGeneration.ts';
+import { postDreamToTwitter } from './services/twitterPost.ts';
 import { schedule, type ScheduledTask } from 'node-cron';
 
 /**
@@ -83,7 +84,17 @@ export class DreamCronService extends Service {
         logger.info('[DreamPlugin] No FAL_KEY set, posting text-only dream');
       }
 
-      // Step 4: Emit event for the dream
+      // Step 4: Post to Twitter if we have a video
+      if (videoUrl) {
+        try {
+          const tweetId = await postDreamToTwitter(videoUrl);
+          logger.info({ tweetId }, '[DreamPlugin] Dream posted to Twitter');
+        } catch (error) {
+          logger.error({ error }, '[DreamPlugin] Twitter post failed');
+        }
+      }
+
+      // Step 5: Emit event for the dream
       logger.info({ dreamText, videoUrl }, '[DreamPlugin] Dream pipeline complete');
 
       await runtime.emitEvent('DREAM_GENERATED', {
