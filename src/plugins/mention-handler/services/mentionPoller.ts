@@ -1,5 +1,6 @@
-import { Service, IAgentRuntime, logger, generateUUID } from '@elizaos/core';
+import { Service, IAgentRuntime, logger } from '@elizaos/core';
 import { TwitterApi } from 'twitter-api-v2';
+import { randomUUID } from 'crypto';
 
 export class MentionPollerService extends Service {
   static serviceType = 'mention-poller';
@@ -125,7 +126,7 @@ export class MentionPollerService extends Service {
 
         const stateKey = `mention-poller-state-${this.userId}`;
         await this.runtime.addMemory({
-          id: generateUUID(),
+          id: randomUUID(),
           content: {
             lastMentionId: this.lastMentionId,
             updatedAt: new Date().toISOString(),
@@ -175,7 +176,7 @@ export class MentionPollerService extends Service {
       } as any);
 
       await this.runtime.addMemory({
-        id: generateUUID(),
+        id: randomUUID(),
         content: {
           tweetId: tweet.id,
           username: tweet.username,
