@@ -1,4 +1,5 @@
 import { type Character } from '@elizaos/core';
+import mentionHandlerPlugin from './plugins/mention-handler/index.ts';
 
 export const character: Character = {
   name: 'Oneira',
@@ -12,6 +13,7 @@ export const character: Character = {
       ? ['@elizaos/plugin-twitter']
       : []),
     ...(!process.env.IGNORE_BOOTSTRAP ? ['@elizaos/plugin-bootstrap'] : []),
+    mentionHandlerPlugin,
   ],
   settings: {
     secrets: {},
