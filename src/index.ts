@@ -1,9 +1,11 @@
 import { logger, type IAgentRuntime, type Project, type ProjectAgent } from '@elizaos/core';
 import dreamPlugin from './plugins/dream/index.ts';
+import brainComputerInterfacePlugin from './plugins/brain-computer-interface/index.ts';
 import { character } from './character.ts';
 import { researchCharacter } from './characters/researchAgent.ts';
 import { communityCharacter } from './characters/communityAgent.ts';
 import { orchestratorCharacter } from './characters/orchestratorAgent.ts';
+import { brainCharacter } from './characters/brainAgent.ts';
 
 const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
   logger.info('Initializing Oneira');
@@ -22,6 +24,7 @@ const project: Project = {
     { character: researchCharacter },                                                                                    // OneiraResearch (Reddit + RSS)
     { character: communityCharacter },                                                                                   // OneiraCommunity (Discord)
     { character: orchestratorCharacter },                                                                                // OneiraOrchestrator (Internal coordinator)
+    { character: brainCharacter, plugins: [brainComputerInterfacePlugin] },                                             // OneiraBrain (EEG BCI)
   ],
 };
 
