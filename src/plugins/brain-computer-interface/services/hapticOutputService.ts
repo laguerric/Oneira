@@ -10,7 +10,7 @@ export interface HapticPattern {
 class HapticOutputServiceImpl extends Service {
   static serviceType = 'haptic-output';
   private deviceConnected = false;
-  private subscriptionId: string = '';
+  private unsubscribe: (() => void) | null = null;
 
   // Pre-programmed haptic patterns for lucid dream triggers
   private patterns: Record<string, HapticPattern> = {
@@ -54,7 +54,7 @@ class HapticOutputServiceImpl extends Service {
     }
 
     // Subscribe to intervention commands
-    this.subscriptionId = sharedBus.subscribe('intervention_command', (entry) => {
+    this.unsubscribe = sharedBus.subscribe('intervention_command', (entry) => {
       const command = entry.payload as InterventionCommand;
       if (command.devices.haptic) {
         this.executeHapticPattern(command);
@@ -132,7 +132,10 @@ class HapticOutputServiceImpl extends Service {
   }
 
   async disconnect(): Promise<void> {
-    sharedBus.subscribe('intervention_command', () => {});
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
     logger.info('[HapticOutput] Disconnected');
   }
 }

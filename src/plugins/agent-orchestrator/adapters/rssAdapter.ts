@@ -54,7 +54,7 @@ export class RSSAdapter implements PlatformAdapter {
   }
 
   monitor(keywords: string[], handler: (post: PlatformPost) => void): void {
-    const interval = parseInt(process.env.RSS_POLL_INTERVAL || '360') * 60 * 1000; // default 6 hours
+    const interval = (parseInt(process.env.RSS_POLL_INTERVAL || '360', 10) || 360) * 60 * 1000; // default 6 hours
 
     this.pollingInterval = setInterval(async () => {
       for (const feedUrl of this.feeds) {

@@ -15,13 +15,13 @@ class REMDetectionServiceImpl extends Service {
   static serviceType = 'rem-detection';
   private eegBuffer: EEGProcessed[] = [];
   private remHistory: REMDetectionResult[] = [];
-  private subscriptionId: string = '';
+  private unsubscribe: (() => void) | null = null;
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
     logger.info('[REMDetection] Initializing REM detection');
 
     // Subscribe to EEG stream updates
-    this.subscriptionId = sharedBus.subscribe('eeg_processed', (entry) => {
+    this.unsubscribe = sharedBus.subscribe('eeg_processed', (entry) => {
       if (entry.payload.eeg) {
         this.analyzeEEGForREM(entry.payload.eeg);
       }
@@ -124,7 +124,10 @@ class REMDetectionServiceImpl extends Service {
   }
 
   async disconnect(): Promise<void> {
-    sharedBus.subscribe('eeg_processed', () => {});
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
     logger.info('[REMDetection] Disconnected');
   }
 }

@@ -57,8 +57,8 @@ export class TweetSearchPollerService extends Service {
 
       // Start polling every 30 minutes
       const intervalMinutes = parseInt(
-        process.env.TWITTER_SEARCH_INTERVAL || '30'
-      );
+        process.env.TWITTER_SEARCH_INTERVAL || '30', 10
+      ) || 30;
       const intervalMs = intervalMinutes * 60 * 1000;
 
       this.interval = setInterval(() => {

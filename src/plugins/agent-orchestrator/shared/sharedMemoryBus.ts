@@ -10,6 +10,8 @@ export interface BusEntry {
   processed: boolean;
 }
 
+const MAX_ENTRIES = 1000;
+
 class SharedMemoryBusImpl {
   private entries: BusEntry[] = [];
   private listeners: Map<string, ((entry: BusEntry) => void)[]> = new Map();
@@ -22,11 +24,19 @@ class SharedMemoryBusImpl {
       processed: false,
     };
     this.entries.push(full);
+
+    // Evict oldest entries when exceeding cap
+    if (this.entries.length > MAX_ENTRIES) {
+      this.entries = this.entries.slice(-MAX_ENTRIES);
+    }
+
     const handlers = this.listeners.get(entry.type) ?? [];
     for (const handler of handlers) {
       try {
         handler(full);
-      } catch (_) {}
+      } catch (err) {
+        console.error(`[SharedMemoryBus] Handler error for type "${entry.type}":`, err);
+      }
     }
     return full;
   }

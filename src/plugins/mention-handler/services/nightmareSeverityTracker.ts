@@ -243,10 +243,10 @@ export class NightmareSeverityTrackerService extends Service {
 
     // Emotional theme severity
     const severeThemes = ['powerlessness', 'suffocation', 'violence'];
-    const hasSeveTheme = params.emotionalThemes.some((t) =>
+    const hasSevereTheme = params.emotionalThemes.some((t) =>
       severeThemes.includes(t)
     );
-    if (hasSeveTheme) score += 3;
+    if (hasSevereTheme) score += 3;
     else if (params.emotionalThemes.length > 2) score += 2;
     else if (params.emotionalThemes.length > 0) score += 1;
 

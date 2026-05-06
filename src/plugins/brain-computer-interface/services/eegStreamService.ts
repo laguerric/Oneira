@@ -93,6 +93,9 @@ class EEGStreamServiceImpl extends Service {
     // Simplified FFT-like computation from raw channels
     // In production, use real DSP library (e.g., fft.js)
     const allChannels = this.buffer.flatMap((s) => s.channels);
+    if (allChannels.length === 0) {
+      return { timestamp: Date.now(), deltaWaves: 0, thetaWaves: 0, alphaWaves: 0, betaWaves: 0, gammaWaves: 0, sawtooth: 0 };
+    }
     const avg = allChannels.reduce((a, b) => a + b, 0) / allChannels.length;
 
     // Pseudo-frequency detection via simple signal analysis
@@ -119,6 +122,7 @@ class EEGStreamServiceImpl extends Service {
     let negativeSlopes = 0;
 
     for (let i = 1; i < this.buffer.length; i++) {
+      if (!this.buffer[i].channels.length || !this.buffer[i - 1].channels.length) continue;
       const delta = this.buffer[i].channels[0] - this.buffer[i - 1].channels[0];
       if (delta > 0.1) positiveSlopes++;
       if (delta < -0.1) negativeSlopes++;

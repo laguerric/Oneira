@@ -61,7 +61,7 @@ async function downloadToTemp(videoUrl: string): Promise<string> {
   if (!res.ok) throw new Error(`Failed to download video: ${res.status}`);
 
   const buffer = Buffer.from(await res.arrayBuffer());
-  const tmpFile = path.join(os.tmpdir(), `dream-${Date.now()}.mp4`);
+  const tmpFile = path.join(os.tmpdir(), `dream-${crypto.randomUUID()}.mp4`);
   fs.writeFileSync(tmpFile, buffer);
   logger.info(`[TwitterPost] Downloaded ${buffer.length} bytes to ${tmpFile}`);
   return tmpFile;

@@ -66,8 +66,8 @@ export class MentionPollerService extends Service {
       }
 
       const intervalMinutes = parseInt(
-        process.env.TWITTER_MENTION_CHECK_INTERVAL || '3'
-      );
+        process.env.TWITTER_MENTION_CHECK_INTERVAL || '3', 10
+      ) || 3;
       const intervalMs = intervalMinutes * 60 * 1000;
 
       this.interval = setInterval(() => {

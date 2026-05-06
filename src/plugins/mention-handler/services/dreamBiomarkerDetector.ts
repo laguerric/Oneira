@@ -285,7 +285,6 @@ export class DreamBiomarkerDetectorService extends Service {
     if (
       text.includes('dark') ||
       text.includes('grey') ||
-      text.includes('grey') ||
       text.includes('gray')
     ) {
       score += 15;

@@ -14,7 +14,7 @@ export interface AudioBinaural {
 class AudioOutputServiceImpl extends Service {
   static serviceType = 'audio-output';
   private audioContext: AudioContext | null = null;
-  private subscriptionId: string = '';
+  private unsubscribe: (() => void) | null = null;
   private isPlaying = false;
 
   private binauralFrequencies: Record<string, AudioBinaural> = {
@@ -58,7 +58,7 @@ class AudioOutputServiceImpl extends Service {
     }
 
     // Subscribe to intervention commands
-    this.subscriptionId = sharedBus.subscribe('intervention_command', (entry) => {
+    this.unsubscribe = sharedBus.subscribe('intervention_command', (entry) => {
       const command = entry.payload as InterventionCommand;
       if (command.devices.audio) {
         this.playBinauralBeats(command);
@@ -178,7 +178,10 @@ class AudioOutputServiceImpl extends Service {
     if (this.audioContext) {
       await this.audioContext.close();
     }
-    sharedBus.subscribe('intervention_command', () => {});
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
     logger.info('[AudioOutput] Disconnected');
   }
 }

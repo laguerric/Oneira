@@ -14,14 +14,14 @@ export interface NightmarePrediction {
 class NightmarePredictionServiceImpl extends Service {
   static serviceType = 'nightmare-prediction';
   private remHistory: REMDetectionResult[] = [];
-  private subscriptionId: string = '';
+  private unsubscribe: (() => void) | null = null;
   private userHistoryId: string = '';
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
     logger.info('[NightmarePrediction] Initializing nightmare prediction ML model');
 
     // Subscribe to REM detection updates
-    this.subscriptionId = sharedBus.subscribe('rem_detected', (entry) => {
+    this.unsubscribe = sharedBus.subscribe('rem_detected', (entry) => {
       this.predictNightmare(entry.payload);
     });
 
@@ -164,7 +164,10 @@ class NightmarePredictionServiceImpl extends Service {
   }
 
   async disconnect(): Promise<void> {
-    sharedBus.subscribe('rem_detected', () => {});
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
     logger.info('[NightmarePrediction] Disconnected');
   }
 }

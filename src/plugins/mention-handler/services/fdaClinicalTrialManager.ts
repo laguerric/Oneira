@@ -316,7 +316,7 @@ export class FDAClinicalTrialManagerService extends Service {
               this.trialParticipants.size
             ) *
             100
-          ).toFixed(1) as any,
+          ).toFixed(1)) as unknown as number,
         treatmentArm: {
           enrolled: treatmentParticipants.length,
           completed: treatmentCompleted.length,
@@ -417,13 +417,17 @@ export class FDAClinicalTrialManagerService extends Service {
   }
 
   private calculatePValue(treatment: number, control: number): number {
-    // Simplified t-test calculation
-    // In real trial, would use proper statistical analysis
-    const difference = Math.abs(treatment - control);
-    if (difference > 25) return 0.01;
-    if (difference > 20) return 0.05;
-    if (difference > 15) return 0.10;
-    return 0.25;
+    // Simplified two-sample z-test approximation for proportion differences
+    // NOTE: Production clinical trials MUST use a proper statistics library (e.g., jstat)
+    // with actual per-participant data, not just group means
+    const n = Math.max(this.trialParticipants.size / 2, 1);
+    const pooled = (treatment + control) / 2;
+    const se = Math.sqrt((2 * pooled * (100 - pooled)) / Math.max(n, 1));
+    if (se === 0) return 1;
+    const z = Math.abs(treatment - control) / se;
+    // Approximate p-value from z-score using normal CDF approximation
+    const p = Math.exp(-0.5 * z * z) / (z * Math.sqrt(2 * Math.PI) + 1e-10);
+    return Math.min(1, Math.max(0, 2 * p)); // two-tailed
   }
 
   private async reportAdverseEvent(
