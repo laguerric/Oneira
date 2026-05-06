@@ -3,6 +3,8 @@ import { MentionPollerService } from './services/mentionPoller.ts';
 import { TweetSearchPollerService } from './services/tweetSearchPoller.ts';
 import { NightmareSeverityTrackerService } from './services/nightmareSeverityTracker.ts';
 import { SleepQualityIntegrationService } from './services/sleepQualityIntegration.ts';
+import { DreamBiomarkerDetectorService } from './services/dreamBiomarkerDetector.ts';
+import { FDAClinicalTrialManagerService } from './services/fdaClinicalTrialManager.ts';
 import { mentionReplyAction } from './actions/mentionReplyAction.ts';
 import { dreamJournalAction } from './actions/dreamJournalAction.ts';
 
@@ -21,12 +23,14 @@ import { dreamJournalAction } from './actions/dreamJournalAction.ts';
 const mentionHandlerPlugin: Plugin = {
   name: 'plugin-mention-handler',
   description:
-    'Oneira: Therapeutic dream research platform with mention handling, nightmare tracking, and sleep correlation analysis',
+    'Oneira: Therapeutic dream research platform with clinical trial management and FDA-ready biomarker detection',
   services: [
     MentionPollerService,
     TweetSearchPollerService,
     NightmareSeverityTrackerService,
     SleepQualityIntegrationService,
+    DreamBiomarkerDetectorService,
+    FDAClinicalTrialManagerService,
   ],
   actions: [mentionReplyAction, dreamJournalAction],
 };
