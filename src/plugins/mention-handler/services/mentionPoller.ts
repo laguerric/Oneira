@@ -125,15 +125,27 @@ export class MentionPollerService extends Service {
         this.lastMentionId = response.meta.newest_id;
 
         const stateKey = `mention-poller-state-${this.userId}`;
-        await this.runtime.addMemory({
-          id: randomUUID(),
-          content: {
+        const existingState = await this.runtime.getMemoryById(stateKey);
+
+        if (existingState) {
+          // Update existing memory
+          existingState.content = {
             lastMentionId: this.lastMentionId,
             updatedAt: new Date().toISOString(),
-          },
-          agentId: this.runtime.agentId,
-          createdAt: Date.now(),
-        });
+          };
+          await this.runtime.updateMemory(existingState);
+        } else {
+          // Create new memory with stable key
+          await this.runtime.addMemory({
+            id: stateKey,
+            content: {
+              lastMentionId: this.lastMentionId,
+              updatedAt: new Date().toISOString(),
+            },
+            agentId: this.runtime.agentId,
+            createdAt: Date.now(),
+          });
+        }
 
         logger.debug(
           `[MentionPoller] Updated lastMentionId to ${this.lastMentionId}`
