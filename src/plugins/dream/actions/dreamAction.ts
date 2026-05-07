@@ -10,6 +10,11 @@ import {
 import { dailyContextProvider } from '../providers/dailyContext.ts';
 import { synthesizeDream } from '../services/dreamSynthesis.ts';
 import { generateDreamVideo } from '../services/videoGeneration.ts';
+import {
+  emitDreamFragment,
+  collectDreamFragments,
+  formatDreamEchoes,
+} from '../services/dreamContagion.ts';
 
 /**
  * Manual trigger for the dream pipeline.
@@ -47,11 +52,23 @@ export const dreamAction: Action = {
         return { success: true, text: 'No memories to dream about' };
       }
 
-      // Step 2: Synthesize dream
-      await callback({ text: 'The dream is forming...' });
-      const dreamText = await synthesizeDream(runtime, context.text ?? '');
+      // Step 2: Collect dream echoes from the network
+      const agentName = (runtime as any).character?.name || 'Oneira';
+      const networkFragments = collectDreamFragments(agentName);
+      const dreamEchoes = formatDreamEchoes(networkFragments);
 
-      // Step 3: Generate video (if FAL_KEY is set)
+      if (networkFragments.length > 0) {
+        await callback({ text: `Sensing ${networkFragments.length} dream echo${networkFragments.length > 1 ? 's' : ''} from the network...` });
+      }
+
+      // Step 3: Synthesize dream with network echoes
+      await callback({ text: 'The dream is forming...' });
+      const dreamText = await synthesizeDream(runtime, context.text ?? '', dreamEchoes || undefined);
+
+      // Step 4: Emit dream fragment to the network
+      emitDreamFragment(agentName, dreamText);
+
+      // Step 5: Generate video (if FAL_KEY is set)
       let videoUrl: string | null = null;
       if (process.env.FAL_KEY?.trim()) {
         await callback({ text: 'Rendering the dream into vision...' });
@@ -62,7 +79,7 @@ export const dreamAction: Action = {
         }
       }
 
-      // Step 4: Post the dream (video only, no caption)
+      // Step 6: Post the dream (video only, no caption)
       await callback({
         text: videoUrl ? '' : dreamText,
         ...(videoUrl ? { attachments: [{ id: 'dream-video', url: videoUrl, title: 'Tonight\'s dream' }] } : {}),

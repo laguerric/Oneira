@@ -4,15 +4,22 @@ import { dreamAction } from './actions/dreamAction.ts';
 import { synthesizeDream } from './services/dreamSynthesis.ts';
 import { generateDreamVideo } from './services/videoGeneration.ts';
 import { postDreamToTwitter } from './services/twitterPost.ts';
+import {
+  emitDreamFragment,
+  collectDreamFragments,
+  formatDreamEchoes,
+  findSharedThemes,
+} from './services/dreamContagion.ts';
 import { schedule, type ScheduledTask } from 'node-cron';
 
 /**
  * Service that runs the nightly dream cron job.
  * At midnight every day, it pulls conversations, synthesizes a dream, generates video, and posts.
+ * Now with Dream Contagion: agents share dream fragments and influence each other's dreams.
  */
 export class DreamCronService extends Service {
   static serviceType = 'dream-cron';
-  capabilityDescription = 'Runs the nightly dream pipeline on a cron schedule';
+  capabilityDescription = 'Runs the nightly dream pipeline on a cron schedule with dream network contagion';
   private cronTask: ScheduledTask | null = null;
 
   constructor(runtime: IAgentRuntime) {
@@ -57,9 +64,10 @@ export class DreamCronService extends Service {
 
   async runDreamPipeline(): Promise<void> {
     const runtime = this.runtime;
+    const agentName = (runtime as any).character?.name || 'Oneira';
 
     try {
-      // Step 1: Get daily context
+      // Step 1: Get daily context (own memories)
       const context = await dailyContextProvider.get(runtime, {} as any, {} as any);
       const memories = (context.data as Record<string, unknown>)?.memories as string[] || [];
 
@@ -68,11 +76,26 @@ export class DreamCronService extends Service {
         return;
       }
 
-      // Step 2: Synthesize dream text
-      const dreamText = await synthesizeDream(runtime, context.text ?? '');
+      // Step 2: Collect dream fragments from other agents in the network
+      const networkFragments = collectDreamFragments(agentName);
+      const dreamEchoes = formatDreamEchoes(networkFragments);
+
+      if (networkFragments.length > 0) {
+        const sharedThemes = findSharedThemes(context.text ?? '', networkFragments);
+        logger.info(
+          `[DreamContagion] ${agentName} found ${networkFragments.length} dream echoes. ` +
+          `Shared themes: ${sharedThemes.length > 0 ? sharedThemes.join(', ') : 'none (novel influence)'}`
+        );
+      }
+
+      // Step 3: Synthesize dream with network echoes
+      const dreamText = await synthesizeDream(runtime, context.text ?? '', dreamEchoes || undefined);
       logger.info(`[DreamPlugin] Dream: ${dreamText}`);
 
-      // Step 3: Generate video if FAL_KEY available
+      // Step 4: Emit this dream as a fragment for other agents
+      emitDreamFragment(agentName, dreamText);
+
+      // Step 5: Generate video if FAL_KEY available
       let videoUrl: string | null = null;
       if (process.env.FAL_KEY?.trim()) {
         try {
@@ -84,7 +107,7 @@ export class DreamCronService extends Service {
         logger.info('[DreamPlugin] No FAL_KEY set, posting text-only dream');
       }
 
-      // Step 4: Post to Twitter if we have a video
+      // Step 6: Post to Twitter if we have a video
       if (videoUrl) {
         try {
           const tweetId = await postDreamToTwitter(videoUrl);
@@ -94,13 +117,14 @@ export class DreamCronService extends Service {
         }
       }
 
-      // Step 5: Emit event for the dream
-      logger.info({ dreamText, videoUrl }, '[DreamPlugin] Dream pipeline complete');
+      // Step 7: Emit event for the dream
+      logger.info({ dreamText, videoUrl, networkInfluence: networkFragments.length }, '[DreamPlugin] Dream pipeline complete');
 
       await runtime.emitEvent('DREAM_GENERATED', {
         dreamText,
         videoUrl,
         memoryCount: memories.length,
+        networkFragments: networkFragments.length,
         timestamp: new Date().toISOString(),
       } as any);
 
@@ -112,10 +136,11 @@ export class DreamCronService extends Service {
 
 /**
  * The Dream plugin — adds nightly dream synthesis to Oneira.
+ * Now with Dream Contagion: agents share dream fragments across the network.
  */
 const dreamPlugin: Plugin = {
   name: 'plugin-dream',
-  description: 'Nightly dream pipeline: synthesizes daily conversations into surreal video dreams',
+  description: 'Nightly dream pipeline with Dream Contagion — agents share dream fragments and influence each other\'s dreams',
   actions: [dreamAction],
   providers: [dailyContextProvider],
   services: [DreamCronService],

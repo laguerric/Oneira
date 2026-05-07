@@ -80,6 +80,7 @@
     "format": "prettier --write ./src",
     "format:check": "prettier --check ./src",
     "check-all": "bun run type-check && bun run format:check && bun run test",
+    "cli": "bun run src/cli.ts",
     "cy:open": "bun run test:install && cypress open",
     "cy:run": "bun run test:install && cypress run --component",
     "cy:test": "bun run test:install && cypress run --component --reporter spec",

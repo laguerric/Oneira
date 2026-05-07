@@ -11,19 +11,31 @@ The scene should be:
 - Rich in sensory detail: light, texture, motion, sound
 - Suited for video generation — describe movement and atmosphere
 
+If dream echoes from the network are provided, let their imagery subtly bleed into your scene.
+Shared symbols should recur in transformed ways — water becomes glass, fire becomes light,
+corridors become rivers. The dreams should rhyme, not repeat.
+
 Output ONLY the scene description. No preamble, no quotes, no explanation.`;
 
 /**
- * Takes the day's conversations and synthesizes them into a surreal dream paragraph
- * using the LLM via ElizaOS runtime.
+ * Takes the day's conversations and optional dream echoes from the network,
+ * and synthesizes them into a surreal dream paragraph using the LLM.
  */
 export async function synthesizeDream(
   runtime: IAgentRuntime,
-  dailyConversations: string
+  dailyConversations: string,
+  dreamEchoes?: string
 ): Promise<string> {
   logger.info('[DreamPlugin] Synthesizing dream from daily conversations...');
 
-  const prompt = `${DREAM_SYSTEM_PROMPT}\n\nHere are today's conversations and thoughts:\n\n${dailyConversations}\n\nSynthesize these into a single surreal dream scene.`;
+  let prompt = `${DREAM_SYSTEM_PROMPT}\n\nHere are today's conversations and thoughts:\n\n${dailyConversations}`;
+
+  if (dreamEchoes) {
+    prompt += dreamEchoes;
+    logger.info('[DreamPlugin] Dream echoes from network included in synthesis');
+  }
+
+  prompt += '\n\nSynthesize these into a single surreal dream scene.';
 
   try {
     const dreamText = await runtime.useModel(ModelType.TEXT_LARGE, {
